@@ -5,61 +5,99 @@ from AST import *
 
 class CheckCodeGenSuite(unittest.TestCase):
     
-    def test1(self):
-        """ """
-        input = """
-            main: function void () {}
-        """
-        expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 501))
+    # def test1(self):
+    #     """ """
+    #     input = """
+    #         b: integer = 5;
+    #         main: function void () {
+    #             i: integer = 5;
+    #             while(i > 0) {
+    #                 printInteger(i);
+    #                 i = i - 1;
+    #             }
+    #         }
+    #     """
+    #     expect = "54321"
+    #     self.assertTrue(TestCodeGen.test(input, expect, 501))
     
     # def test2(self):
     #     """ """
     #     input = """
-        
+    #         main: function void() {
+    #             b: integer = 5;
+    #             printInteger(b);
+    #         }
     #     """
-    #     expect = "successful"
+    #     expect = "5"
     #     self.assertTrue(TestCodeGen.test(input, expect, 502))
     
     # def test3(self):
     #     """ """
     #     input = """
-        
+    #         b: integer = 5;
+    #         main: function void () {
+    #             i: integer = 5;
+    #             for(i = 0, i < 5, i + 1) {
+    #                 printInteger(i);
+    #             }
+    #         }
     #     """
-    #     expect = "successful"
+    #     expect = "01234"
     #     self.assertTrue(TestCodeGen.test(input, expect, 503))
     
     # def test4(self):
     #     """ """
     #     input = """
+    #         b: integer = 4;
+    #         main: function void () {
+    #             i: integer = 5;
+    #             if (i == 5) {
+    #                 printInteger(i);
+    #             }
+    #         }
         
     #     """
-    #     expect = "successful"
+    #     expect = "5"
     #     self.assertTrue(TestCodeGen.test(input, expect, 504))
     
     # def test5(self):
     #     """ """
     #     input = """
-        
+    #         b: integer = 5;
+    #         main: function void () {
+    #             i: integer = 5;
+    #             do {
+    #                 printInteger(i);
+    #                 i = i - 1;
+    #             }
+    #             while(i > 0);
+    #         }
     #     """
-    #     expect = "successful"
+    #     expect = "54321"
     #     self.assertTrue(TestCodeGen.test(input, expect, 505))
     
     # def test6(self):
     #     """ """
     #     input = """
-        
+    #         main: function void () {
+    #             a: integer = 5;
+    #             a = 4;
+    #             printInteger(a);
+    #         }
     #     """
-    #     expect = "successful"
+    #     expect = "4"
     #     self.assertTrue(TestCodeGen.test(input, expect, 506))
     
-    # def test7(self):
-    #     """ """
-    #     input = """
-        
-    #     """
-    #     expect = "successful"
-    #     self.assertTrue(TestCodeGen.test(input, expect, 507))
+    def test7(self):
+        """ """
+        input = """
+            main: function void() {
+                a: array [3] of integer = {1,2,3};
+                printInteger(a[0]);
+            }
+        """
+        expect = "1"
+        self.assertTrue(TestCodeGen.test(input, expect, 507))
     
     # def test8(self):
     #     """ """

@@ -31,7 +31,7 @@ class Emitter():
         elif typeIn is cgen.ClassType:
             return "L" + inType.cname.name + ";"
 
-    def getFullType(inType):
+    def getFullType(self, inType):
         typeIn = type(inType)
         if typeIn is IntegerType:
             return "int"
@@ -168,7 +168,7 @@ class Emitter():
         if type(inType) is FloatType:
             return self.jvm.emitFLOAD(index)
         # elif type(inType) is cgen.ArrayPointerType or type(inType) is cgen.ClassType or type(inType) is StringType:
-        elif type(inType) is cgen.ClassType or type(inType) is StringType:
+        elif type(inType) is cgen.ClassType or type(inType) is StringType or type(inType) is ArrayType:
             return self.jvm.emitALOAD(index)
         else:
             raise IllegalOperandException(name)
@@ -538,15 +538,48 @@ class Emitter():
     *   @param index the index of the local variable.
     *   @param in the type of the local array variable.
     '''
+    def emitInitNewStaticArray(self, name, size, eleType, frame, initCode):
+        result = []
+        result.append(self.emitPUSHICONST(size, frame))
+        frame.pop()
+        if type(eleType) is cgen.StringType:
+            result.append(self.jvm.emitANEWARRAY(self.getFullType(eleType)))
+        else:
+            result.append(self.jvm.emitNEWARRAY(self.getFullType(eleType)))
+
+        result.append(initCode)
+        result.append(self.jvm.emitPUTSTATIC(name, self.getJVMType(cgen.ArrayGen(eleType))))
+        return ''.join(result)
 
     '''   generate code to initialize local array variables.
     *   @param in the list of symbol entries corresponding to local array variable.    
     '''
+    def emitInitNewLocalArray(self, addressIndex, size, eleType, frame, initCode):
+        result = []
+        result.append(self.emitPUSHICONST(size, frame))
+        frame.pop()
+        print(eleType)
+        if type(eleType) is StringType:
+            result.append(self.jvm.emitANEWARRAY(self.getFullType(eleType)))
+        else:
+            result.append(self.jvm.emitNEWARRAY(self.getFullType(eleType)))
+        
+        result.append(initCode)
+        result.append(self.jvm.emitASTORE(addressIndex))
+        return ''.join(result)
 
     '''   generate code to jump to label if the value on top of operand stack is true.<p>
     *   ifgt label
     *   @param label the label where the execution continues if the value on top of stack is true.
     '''
+    def emitCloneArray(self, addressIndex, eleType, frame):
+        result = []
+        result.append(self.emitREADVAR("", cgen.ArrayPointerType(eleType), addressIndex, frame))
+        result.append(JasminCode.INDENT + "invokevirtual " + "[" + self.getJVMType(eleType) + "/clone()Ljava/lang/Object;" + JasminCode.END)
+        result.append(JasminCode.INDENT + "checkcast [" + self.getJVMType(eleType) + JasminCode.END)
+        result.append(self.jvm.emitASTORE(addressIndex))
+        frame.pop()
+        return ''.join(result)
 
     def emitIFTRUE(self, label, frame):
         # label: Int
