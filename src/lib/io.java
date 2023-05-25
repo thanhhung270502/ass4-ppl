@@ -98,5 +98,9 @@ public class io {
     public static void printFloat(float i){
         System.out.print(i+"");
     }
+
+    public static void printString(String a) {
+        System.out.print(a + "");
+    }
 }
 

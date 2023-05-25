@@ -88,29 +88,44 @@ class CheckCodeGenSuite(unittest.TestCase):
     #     expect = "4"
     #     self.assertTrue(TestCodeGen.test(input, expect, 506))
     
-    def test7(self):
+    # def test7(self):
+    #     """ """
+    #     input = """
+    #         main: function void() {
+    #             a: array [3] of integer = {1,2,3};
+    #             printInteger(a[0]);
+    #         }
+    #     """
+    #     expect = "1"
+    #     self.assertTrue(TestCodeGen.test(input, expect, 507))
+    
+    def test8(self):
         """ """
         input = """
             main: function void() {
-                a: array [3] of integer = {1,2,3};
-                printInteger(a[0]);
+                b: float = 3.5;
+                printFloat(b);
             }
         """
-        expect = "1"
-        self.assertTrue(TestCodeGen.test(input, expect, 507))
-    
-    # def test8(self):
-    #     """ """
-    #     input = """
-        
-    #     """
-    #     expect = "successful"
-    #     self.assertTrue(TestCodeGen.test(input, expect, 508))
+        expect = "3.5"
+        self.assertTrue(TestCodeGen.test(input, expect, 508))
     
     # def test9(self):
     #     """ """
     #     input = """
-        
+    #         main: function void() {
+    #             a: integer = 2;
+    #             b: integer = 3;
+    #             if (a < b) {
+    #                 printString("a is less than b");
+    #             }
+    #             if (a > b) {
+    #                 printString("a is rather than b");
+    #             }
+    #             if (a == b) {
+    #                 printString("a is equal b");
+    #             }
+    #         }
     #     """
     #     expect = "successful"
     #     self.assertTrue(TestCodeGen.test(input, expect, 509))
@@ -118,7 +133,14 @@ class CheckCodeGenSuite(unittest.TestCase):
     # def test10(self):
     #     """ """
     #     input = """
-        
+    #         foo: function integer(a: integer) inherit goo {
+    #             super(3);
+    #             return 2;
+    #         }
+    #         goo: function integer(inherit abc: integer) {
+    #             return b;
+    #         }
+    #         main: function void() {}
     #     """
     #     expect = "successful"
     #     self.assertTrue(TestCodeGen.test(input, expect, 510))

@@ -147,14 +147,14 @@ class CodeGenVisitor(Visitor):
 
         frame.exitScope()
 
-    def genMETHOD(self, consdecl, o, frame):
-        isInit = consdecl.return_type is None
-        isMain = consdecl.name == "main" and len(
-            consdecl.params) == 0 and type(consdecl.return_type) is VoidType
-        returnType = VoidType() if isInit else consdecl.return_type
-        methodName = "<init>" if isInit else consdecl.name
+    def genMETHOD(self, ctx, o, frame):
+        isInit = ctx.return_type is None
+        isMain = ctx.name == "main" and len(
+            ctx.params) == 0 and type(ctx.return_type) is VoidType
+        returnType = VoidType() if isInit else ctx.return_type
+        methodName = "<init>" if isInit else ctx.name
         intype = [ArrayType(0, StringType())] if isMain else list(
-            map(lambda x: x.typ, consdecl.params))
+            map(lambda x: x.typ, ctx.params))
         mtype = MType(intype, returnType)
 
         self.emit.printout(self.emit.emitMETHOD(
@@ -172,10 +172,12 @@ class CodeGenVisitor(Visitor):
                 0, StringType()), frame.getStartLabel(), frame.getEndLabel(), frame))
         else:
             local = reduce(lambda env, ele: SubBody(
-                frame, [self.visit(ele, env)]+env.sym), consdecl.param, SubBody(frame, []))
-            glenv = local.sym+glenv
+                frame, [self.visit(ele, env)]+env.sym), ctx.params, SubBody(frame, []))
+            print("a", glenv.sym)
+            print("b", local.sym)
+            glenv.sym = local.sym + glenv.sym
 
-        body = consdecl.body
+        body = ctx.body
         self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
 
         # Generate code for statements
@@ -183,7 +185,22 @@ class CodeGenVisitor(Visitor):
             self.emit.printout(self.emit.emitREADVAR(
                 "this", ClassType(Id(self.className)), 0, frame))
             self.emit.printout(self.emit.emitINVOKESPECIAL(frame))
-        list(map(lambda x: self.visit(x, SubBody(frame, glenv)), body.body))
+        # list(map(lambda x: self.visit(x, SubBody(frame, glenv)), body.body))
+        if ctx.inherit:
+            for x in body.body:
+                if type(x) is CallStmt:
+                    if x.name == "super":
+                        superStmt = CallStmt(ctx.inherit, x.args)
+                        self.visit(superStmt, SubBody(frame, glenv))
+                    elif x.name == "preventDefault":
+                        continue
+                    else:
+                        self.visit(x, SubBody(frame, glenv))
+                else:
+                    self.visit(x, SubBody(frame, glenv))
+        else:
+            list(map(lambda x: self.visit(x, SubBody(frame, glenv)), body.body))
+
 
         self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
         if type(returnType) is VoidType:
@@ -194,10 +211,15 @@ class CodeGenVisitor(Visitor):
     def visitFuncDecl(self, ctx, o):
         frame = Frame(ctx.name, ctx.return_type)
         self.genMETHOD(ctx, o, frame)
+        params = [x.typ for x in ctx.params]
+        if ctx.inherit:
+            sym = Utils.lookup(ctx.inherit, o.sym, lambda x: x.name)
+            print(sym)
         return Symbol(ctx.name, MType([x.typ for x in ctx.params], ctx.return_type), CName(self.className))
 
     def visitParamDecl(self, ctx, o):
-        pass
+        idx = o.frame.getNewIndex()
+        return Symbol(ctx.name, ctx.typ, Index(idx))
 
     # Expressions
     def visitIntegerType(self, ctx, o): pass
@@ -227,8 +249,6 @@ class CodeGenVisitor(Visitor):
         self.emit.printout(code)
         o.sym.sym += [Symbol(ctx.name, ctx.typ, Index(idx))]
 
-        print(ctx.typ.typ, ctx.typ.dimensions[0])
-
         if ctx.init is not None:
             varType = self.getTypeLiteral(ctx.init)
             if type(varType).__name__ != "ArrayType":
@@ -248,7 +268,9 @@ class CodeGenVisitor(Visitor):
         frame = ctxt.frame
         nenv = ctxt.sym
 
+
         sym = Utils.lookup(ctx.name, nenv, lambda x: x.name)
+        print(sym)
         cname = sym.value.value
     
         ctype = sym.mtype
